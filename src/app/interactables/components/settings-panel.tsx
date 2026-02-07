@@ -86,6 +86,7 @@ function SettingsPanelBase(props: SettingsProps) {
     console.log("Changed fields:", Array.from(changedFields));
 
     // Update state and ref
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Props are updated externally by Tambo; keep local editable state in sync.
     setSettings(props);
     prevPropsRef.current = props;
 

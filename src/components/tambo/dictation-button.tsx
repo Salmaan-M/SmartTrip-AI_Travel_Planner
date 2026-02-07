@@ -1,7 +1,7 @@
 import { Tooltip } from "@/components/tambo/suggestions-tooltip";
 import { useTamboThreadInput, useTamboVoice } from "@tambo-ai/react";
 import { Loader2Icon, Mic, Square } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 
 /**
  * Button for dictating speech into the message input.
@@ -16,11 +16,10 @@ export default function DictationButton() {
     transcriptionError,
   } = useTamboVoice();
   const { setValue } = useTamboThreadInput();
-  const [lastProcessedTranscript, setLastProcessedTranscript] =
-    useState<string>("");
+  const lastProcessedTranscriptRef = useRef<string>("");
 
   const handleStartRecording = () => {
-    setLastProcessedTranscript("");
+    lastProcessedTranscriptRef.current = "";
     startRecording();
   };
 
@@ -29,11 +28,23 @@ export default function DictationButton() {
   };
 
   useEffect(() => {
-    if (transcript && transcript !== lastProcessedTranscript) {
-      setLastProcessedTranscript(transcript);
-      setValue((prev) => prev + " " + transcript);
-    }
-  }, [transcript, lastProcessedTranscript, setValue]);
+    if (!transcript) return;
+
+    const lastTranscript = lastProcessedTranscriptRef.current;
+    if (transcript === lastTranscript) return;
+
+    // Assumes transcript updates are commonly prefix-extended (partial -> full).
+    const nextChunk = transcript.startsWith(lastTranscript)
+      ? transcript.slice(lastTranscript.length)
+      : transcript;
+
+    lastProcessedTranscriptRef.current = transcript;
+
+    const normalizedChunk = nextChunk.trimStart();
+    if (!normalizedChunk) return;
+
+    setValue((prev) => (prev ? `${prev} ${normalizedChunk}` : normalizedChunk));
+  }, [transcript, setValue]);
 
   if (isTranscribing) {
     return (
