@@ -26,12 +26,14 @@ function parseModelJson(text: string): unknown {
     const start = stripped.indexOf("{");
     const end = stripped.lastIndexOf("}");
     if (start === -1 || end === -1 || end <= start) {
+      console.error("Gemini JSON parse failed", stripped);
       throw new Error("Failed to parse JSON from Gemini response");
     }
 
     try {
       return JSON.parse(stripped.slice(start, end + 1));
     } catch {
+      console.error("Gemini JSON parse failed", stripped);
       throw new Error("Failed to parse JSON from Gemini response");
     }
   }
@@ -99,5 +101,5 @@ export async function generateTripPlanWithGemini(
   }
 
   const parsed = parseModelJson(modelText);
-  return tripPlanSchema.parse(parsed) as TripPlan;
+  return tripPlanSchema.parse(parsed);
 }

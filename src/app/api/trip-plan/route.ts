@@ -15,7 +15,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    if (err instanceof Error && err.message === "Missing GEMINI_API_KEY") {
+      return NextResponse.json({ error: err.message }, { status: 500 });
+    }
+
+    console.error("Trip plan API error", err);
+    return NextResponse.json(
+      { error: "Failed to generate trip plan" },
+      { status: 500 },
+    );
   }
 }

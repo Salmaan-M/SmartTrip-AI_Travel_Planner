@@ -37,7 +37,7 @@ export default function Home() {
         throw new Error(msg);
       }
 
-      const parsedPlan = tripPlanSchema.parse(body) as TripPlan;
+      const parsedPlan = tripPlanSchema.parse(body);
       setPlan(parsedPlan);
       setShowForm(false);
     } catch (err) {
