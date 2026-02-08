@@ -84,21 +84,21 @@ export default function Home() {
         {/* Form */}
         {showForm && <TripForm onSubmit={handleSubmit} isLoading={isLoading} />}
 
-        {/* Results */}
-        {!showForm && (
-          <div className="mt-8 space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4">
-                {error}
-              </div>
-            )}
+        {error && (
+          <div className="mt-8 bg-red-50 border border-red-200 text-red-800 rounded-lg p-4">
+            {error}
+          </div>
+        )}
 
-            {plan && <TravelPlanDisplay {...plan} />}
+        {/* Results */}
+        {!showForm && plan && (
+          <div className="mt-8 space-y-6">
+            <TravelPlanDisplay {...plan} />
           </div>
         )}
 
         {/* New Trip Button */}
-        {!showForm && (plan || error) && (
+        {!showForm && plan && (
           <button
             onClick={() => {
               setShowForm(true);
