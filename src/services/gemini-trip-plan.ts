@@ -16,23 +16,25 @@ function stripCodeFences(text: string): string {
 
 function parseModelJson(text: string): unknown {
   const stripped = stripCodeFences(text);
+  const maxLen = 20_000;
+  const safe = stripped.length > maxLen ? stripped.slice(0, maxLen) : stripped;
 
   try {
-    return JSON.parse(stripped);
+    return JSON.parse(safe);
   } catch {
     // Some models occasionally return leading/trailing text. Fall back to the
     // first JSON object-like section.
-    const start = stripped.indexOf("{");
-    const end = stripped.lastIndexOf("}");
+    const start = safe.indexOf("{");
+    const end = safe.lastIndexOf("}");
     if (start === -1 || end === -1 || end <= start) {
-      console.error("Gemini JSON parse failed", stripped);
+      console.error("Gemini JSON parse failed", { preview: safe.slice(0, 1000) });
       throw new Error("Failed to parse JSON from Gemini response");
     }
 
     try {
-      return JSON.parse(stripped.slice(start, end + 1));
+      return JSON.parse(safe.slice(start, end + 1));
     } catch {
-      console.error("Gemini JSON parse failed", stripped);
+      console.error("Gemini JSON parse failed", { preview: safe.slice(0, 1000) });
       throw new Error("Failed to parse JSON from Gemini response");
     }
   }
@@ -98,9 +100,13 @@ export async function generateTripPlanWithGemini(
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    throw new Error(
-      `Gemini API error (${res.status} ${res.statusText}): ${errText || "<no body>"}`,
-    );
+    console.error("Gemini API error response", {
+      status: res.status,
+      statusText: res.statusText,
+      bodyPreview: errText.slice(0, 1000),
+    });
+
+    throw new Error(`Gemini API error (${res.status} ${res.statusText})`);
   }
 
   const data = (await res.json()) as {

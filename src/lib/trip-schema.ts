@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const tripInputSchema = z.object({
   destination: z.string().min(1),
-  days: z.number().int().min(1).max(30),
-  budget: z.number().int().min(0),
+  days: z.coerce.number().int().min(1).max(30),
+  budget: z.coerce.number().int().min(0),
   travelType: z.enum(["solo", "friends", "family"]),
 });
 

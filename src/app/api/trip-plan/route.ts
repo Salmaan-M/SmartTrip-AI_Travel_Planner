@@ -12,7 +12,16 @@ export async function POST(req: Request) {
     return NextResponse.json(plan);
   } catch (err) {
     if (err instanceof ZodError) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Invalid request body",
+          details: err.issues.map((issue) => ({
+            path: issue.path.join("."),
+            message: issue.message,
+          })),
+        },
+        { status: 400 },
+      );
     }
 
     if (err instanceof Error && err.message === "Missing GEMINI_API_KEY") {
