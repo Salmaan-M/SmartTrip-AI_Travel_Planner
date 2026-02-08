@@ -834,14 +834,14 @@ export const TextEditor = React.forwardRef<TamboEditor, TextEditorProps>(
         <SuggestionPopover
           state={resourceState}
           onClose={() => resourceRef.current.setState({ isOpen: false })}
-          defaultIcon={<Cuboid className="w-4 h-4 flex-shrink-0 mt-0.5" />}
+          defaultIcon={<Cuboid className="w-4 h-4 shrink-0 mt-0.5" />}
           emptyMessage="No results found"
           monoSecondary
         />
         <SuggestionPopover
           state={promptState}
           onClose={() => promptRef.current.setState({ isOpen: false })}
-          defaultIcon={<FileText className="w-4 h-4 flex-shrink-0 mt-0.5" />}
+          defaultIcon={<FileText className="w-4 h-4 shrink-0 mt-0.5" />}
           emptyMessage="No prompts found"
         />
         <EditorContent editor={editor} />

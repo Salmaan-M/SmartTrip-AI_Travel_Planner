@@ -107,7 +107,7 @@ export const DataCard = React.forwardRef<HTMLDivElement, DataCardProps>(
                 )}
               >
                 <div
-                  className="flex-shrink-0 mr-3 mt-0.5 cursor-pointer"
+                  className="shrink-0 mr-3 mt-0.5 cursor-pointer"
                   onClick={() => handleToggleCard(card.value)}
                 >
                   <div

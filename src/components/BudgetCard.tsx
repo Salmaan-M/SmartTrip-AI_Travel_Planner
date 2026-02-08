@@ -1,15 +1,26 @@
 import { Budget } from '@/types/trip';
 
 interface BudgetCardProps {
-  budget: Budget;
+  budget?: Budget;
 }
 
 export default function BudgetCard({ budget }: BudgetCardProps) {
+  // Provide default values if budget is undefined
+  const defaultBudget: Budget = {
+    accommodation: 0,
+    food: 0,
+    transport: 0,
+    activities: 0,
+    total: 0,
+  };
+
+  const budgetData = budget || defaultBudget;
+
   const categories = [
-    { name: 'Accommodation', amount: budget.accommodation, icon: '🏨' },
-    { name: 'Food', amount: budget.food, icon: '🍽️' },
-    { name: 'Transport', amount: budget.transport, icon: '🚗' },
-    { name: 'Activities', amount: budget.activities, icon: '🎭' },
+    { name: 'Accommodation', amount: budgetData.accommodation, icon: '🏨' },
+    { name: 'Food', amount: budgetData.food, icon: '🍽️' },
+    { name: 'Transport', amount: budgetData.transport, icon: '🚗' },
+    { name: 'Activities', amount: budgetData.activities, icon: '🎭' },
   ];
 
   return (
@@ -35,7 +46,7 @@ export default function BudgetCard({ budget }: BudgetCardProps) {
           <div className="flex items-center justify-between">
             <span className="text-xl font-bold text-gray-800">Total</span>
             <span className="text-2xl font-bold text-blue-600">
-              ${budget.total}
+              ${budgetData.total}
             </span>
           </div>
         </div>

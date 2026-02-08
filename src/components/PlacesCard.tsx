@@ -1,10 +1,10 @@
 import { Place } from '@/types/trip';
 
 interface PlacesCardProps {
-  places: Place[];
+  places?: Place[];
 }
 
-export default function PlacesCard({ places }: PlacesCardProps) {
+export default function PlacesCard({ places = [] }: PlacesCardProps) {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6">
       <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
