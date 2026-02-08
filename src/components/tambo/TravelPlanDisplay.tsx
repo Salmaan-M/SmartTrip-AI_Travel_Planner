@@ -23,8 +23,8 @@ export default function TravelPlanDisplay({
   places = [],
   food = [],
   tips = [],
-  title = "Your Personalized Tokyo Itinerary",
-  subtitle = "3 days of neighborhoods, sights, and local flavors",
+  title = "Your Personalized 3-Day Itinerary",
+  subtitle = "Complete plan with neighborhoods, attractions, dining, and pro tips",
 }: TravelPlanDisplayProps) {
   return (
     <div id="travel-plan" className="w-full max-w-4xl mx-auto py-8 px-4">
