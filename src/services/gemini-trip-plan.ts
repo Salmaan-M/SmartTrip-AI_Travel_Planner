@@ -16,25 +16,24 @@ function stripCodeFences(text: string): string {
 
 function parseModelJson(text: string): unknown {
   const stripped = stripCodeFences(text);
-  const maxLen = 20_000;
-  const safe = stripped.length > maxLen ? stripped.slice(0, maxLen) : stripped;
+  const preview = stripped.slice(0, 1000);
 
   try {
-    return JSON.parse(safe);
+    return JSON.parse(stripped);
   } catch {
     // Some models occasionally return leading/trailing text. Fall back to the
     // first JSON object-like section.
-    const start = safe.indexOf("{");
-    const end = safe.lastIndexOf("}");
+    const start = stripped.indexOf("{");
+    const end = stripped.lastIndexOf("}");
     if (start === -1 || end === -1 || end <= start) {
-      console.error("Gemini JSON parse failed", { preview: safe.slice(0, 1000) });
+      console.error("Gemini JSON parse failed", { preview });
       throw new Error("Failed to parse JSON from Gemini response");
     }
 
     try {
-      return JSON.parse(safe.slice(start, end + 1));
+      return JSON.parse(stripped.slice(start, end + 1));
     } catch {
-      console.error("Gemini JSON parse failed", { preview: safe.slice(0, 1000) });
+      console.error("Gemini JSON parse failed", { preview });
       throw new Error("Failed to parse JSON from Gemini response");
     }
   }
@@ -84,6 +83,7 @@ export async function generateTripPlanWithGemini(
         ],
         generationConfig: {
           temperature: 0.7,
+          maxOutputTokens: 2048,
         },
       }),
       signal: controller.signal,

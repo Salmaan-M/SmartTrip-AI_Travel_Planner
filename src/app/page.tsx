@@ -27,13 +27,34 @@ export default function Home() {
 
       const body = (await res.json().catch(() => null)) as unknown;
       if (!res.ok) {
-        const msg =
+        const errorMessage =
           body &&
           typeof body === 'object' &&
           'error' in body &&
           typeof (body as { error?: unknown }).error === 'string'
             ? (body as { error: string }).error
-            : 'Failed to generate trip plan';
+            : undefined;
+
+        const code =
+          body &&
+          typeof body === 'object' &&
+          'code' in body &&
+          typeof (body as { code?: unknown }).code === 'string'
+            ? (body as { code: string }).code
+            : undefined;
+
+        let msg = 'Failed to generate trip plan. Please try again.';
+
+        if (code === 'CONFIG_ERROR') {
+          msg = 'Server is missing GEMINI_API_KEY.';
+        } else if (code === 'TIMEOUT') {
+          msg = 'Trip planning took too long. Please try again.';
+        } else if (code === 'UPSTREAM_ERROR') {
+          msg = 'Trip planning service is unavailable. Please try again.';
+        } else if (errorMessage) {
+          msg = errorMessage;
+        }
+
         throw new Error(msg);
       }
 
