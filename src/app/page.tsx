@@ -1,22 +1,50 @@
 'use client';
 
 import { useState } from 'react';
-import { useTamboThread, useTamboThreadInput } from '@tambo-ai/react';
 import TripForm from '@/components/TripForm';
-import { TripInput } from '@/types/trip';
+import TravelPlanDisplay from '@/components/tambo/TravelPlanDisplay';
+import { tripPlanSchema } from '@/lib/trip-schema';
+import type { TripInput, TripPlan } from '@/types/trip';
 
 export default function Home() {
-  const { thread } = useTamboThread();
-  const { setValue, submit, isPending } = useTamboThreadInput();
   const [showForm, setShowForm] = useState(true);
+  const [plan, setPlan] = useState<TripPlan | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (data: TripInput) => {
-    const prompt = `Create a ${data.days}-day travel plan for ${data.destination} with a budget of $${data.budget} for ${data.travelType} travel. Use the TravelPlanDisplay component to show the complete itinerary, budget breakdown, must-visit places, food recommendations, and travel tips.`;
-    
-    // Set the value first, then submit
-    setValue(prompt);
-    await submit();
-    setShowForm(false);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/trip-plan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const body = (await res.json().catch(() => null)) as unknown;
+      if (!res.ok) {
+        const msg =
+          body &&
+          typeof body === 'object' &&
+          'error' in body &&
+          typeof (body as { error?: unknown }).error === 'string'
+            ? (body as { error: string }).error
+            : 'Failed to generate trip plan';
+        throw new Error(msg);
+      }
+
+      const parsedPlan = tripPlanSchema.parse(body) as TripPlan;
+      setPlan(parsedPlan);
+      setShowForm(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -33,32 +61,29 @@ export default function Home() {
         </div>
 
         {/* Form */}
-        {showForm && <TripForm onSubmit={handleSubmit} isLoading={isPending} />}
+        {showForm && <TripForm onSubmit={handleSubmit} isLoading={isLoading} />}
 
-        {/* Messages and Components */}
-        <div className="mt-8 space-y-6">
-          {thread.messages.map((message) => (
-            <div key={message.id}>
-              {/* Show text content */}
-              {Array.isArray(message.content) &&
-                message.content.map((part, i) =>
-                  part.type === 'text' ? (
-                    <div key={i} className="bg-white rounded-lg p-4 mb-4">
-                      <p className="text-gray-800">{part.text}</p>
-                    </div>
-                  ) : null
-                )}
-              
-              {/* Show rendered component */}
-              {message.renderedComponent}
-            </div>
-          ))}
-        </div>
+        {/* Results */}
+        {!showForm && (
+          <div className="mt-8 space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4">
+                {error}
+              </div>
+            )}
+
+            {plan && <TravelPlanDisplay {...plan} />}
+          </div>
+        )}
 
         {/* New Trip Button */}
-        {!showForm && thread.messages.length > 0 && (
+        {!showForm && (plan || error) && (
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setShowForm(true);
+              setPlan(null);
+              setError(null);
+            }}
             className="mt-6 px-6 py-3 bg-white rounded-lg shadow hover:shadow-md transition-shadow font-medium text-gray-700"
           >
             ← Plan Another Trip
