@@ -1,131 +1,73 @@
-# Tambo Template
+# 🧳 SmartTrip AI – Instant Travel Itinerary Generator
 
-This is a starter NextJS app with Tambo hooked up to get your AI app development started quickly.
+**SmartTrip** is an AI-powered travel planning application that creates personalized 3-day itineraries for any destination in seconds. Tell it your destination, vibe (modern city, food-heavy, cultural, adventure, shopping, or side trips), hotel preference (budget, midrange, luxury), and total budget—and get a complete plan with day-by-day activities, restaurant recommendations, budget breakdowns, and a downloadable PDF.
 
-## Get Started
+Built with **Tambo AI** for generative UI, **Google Gemini 2.0-flash** for intelligent itinerary generation, **Next.js 15**, and **Tailwind CSS**, SmartTrip eliminates the back-and-forth of travel planning by generating full, detailed itineraries instantly. No follow-up questions. No endless options. Just your perfect trip, ready to download.
 
-1. Run `npm create-tambo@latest my-tambo-app` for a new project
+## Features
 
-2. `npm install`
+- 🎯 **Smart Preference Selection**: Radio buttons for destination, vibe, hotel level, and budget (preset or custom)
+- 📅 **Complete Itineraries**: Day-by-day breakdown with times, neighborhoods, and specific attractions
+- 💰 **Smart Budget Breakdown**: Realistic allocation for accommodation, food, transit, and activities
+- 🍽️ **Restaurant Recommendations**: 3 specific must-try restaurants tailored to your vibe
+- 🎭 **Curated Attractions**: 3 top places to visit based on your interests
+- 💡 **Pro Tips**: Practical travel advice for your destination
+- 📄 **PDF Download**: One-click export of your entire itinerary (optimized for 1-2 pages)
+- ⚡ **Instant Generation**: No typing required—select preferences and get a full plan in seconds
 
-3. `npx tambo init`
+## Tech Stack
 
-- or rename `example.env.local` to `.env.local` and add your tambo API key you can get for free [here](https://tambo.co/dashboard).
+- **Frontend**: Next.js 15.5.7 with TypeScript
+- **AI Framework**: Tambo AI (generative UI components)
+- **LLM**: Google Gemini 2.0-flash (with fallback mock data)
+- **Styling**: Tailwind CSS with custom typography
+- **PDF Export**: jsPDF + html2canvas
+- **State Management**: React hooks + Tambo context
 
-4. Run `npm run dev` and go to `localhost:3000` to use the app!
+## Getting Started
 
-## Customizing
+1. Clone or create the project
+2. Install dependencies: `npm install`
+3. Add your API keys to `.env.local`:
+   - `NEXT_PUBLIC_TAMBO_API_KEY`: Get from [Tambo Dashboard](https://tambo.co/dashboard)
+   - `NEXT_PUBLIC_GEMINI_API_KEY`: Get from [Google AI Studio](https://aistudio.google.com/)
+4. Run dev server: `npm run dev`
+5. Open `http://localhost:3000` and start planning trips!
 
-### Change what components tambo can control
+## How It Works
 
-You can see how components are registered with tambo in `src/lib/tambo.ts`:
+1. **Select Preferences**: Choose your destination, travel vibe, hotel level, and budget
+2. **AI Generation**: Gemini creates a complete 3-day itinerary based on your preferences
+3. **View Plan**: See the full itinerary with neighborhoods, activities, restaurants, budget breakdown, and tips
+4. **Download PDF**: Export the plan as a compact, printer-friendly PDF
 
-```tsx
-export const components: TamboComponent[] = [
-  {
-    name: "Graph",
-    description:
-      "A component that renders various types of charts (bar, line, pie) using Recharts. Supports customizable data visualization with labels, datasets, and styling options.",
-    component: Graph,
-    propsSchema: graphSchema,
-  },
-  // Add more components here
-];
-```
+## How Tambo Powers SmartTrip
 
-You can install the graph component into any project with:
+SmartTrip leverages **Tambo AI** for intelligent, generative UI that adapts to user needs:
 
-```bash
-npx tambo add graph
-```
+### Custom Components
+- **PreferenceGatherer**: A Tambo-controlled component that renders radio buttons and text inputs for destination, vibe, hotel level, and budget selection. When users click "Generate My Itinerary," it programmatically submits their preferences to the AI.
+- **TravelPlanDisplay**: A dynamic component that renders the complete 3-day itinerary with 5 sections: day-by-day schedule, budget breakdown, places to visit, restaurants, and pro tips. The AI decides to show this component after preferences are received.
+- **DataCard**: A multi-select component used elsewhere in the Tambo ecosystem for flexible option selection.
 
-The example Graph component demonstrates several key features:
+### Generative Workflow
+1. User enters preferences via the PreferenceGatherer component
+2. System prompt instructs Tambo to immediately render TravelPlanDisplay with a complete itinerary
+3. Tambo's `generateTravelPlan` tool calls Google Gemini 2.0-flash with travel planning instructions
+4. Gemini returns structured itinerary data that populates TravelPlanDisplay
+5. Users download the rendered plan as a PDF without any follow-up questions
 
-- Different prop types (strings, arrays, enums, nested objects)
-- Multiple chart types (bar, line, pie)
-- Customizable styling (variants, sizes)
-- Optional configurations (title, legend, colors)
-- Data visualization capabilities
+### System Prompt Control
+The system prompt in `src/app/layout.tsx` guides Tambo to:
+- Show PreferenceGatherer when the user mentions travel planning
+- Never ask follow-up questions (fully constrained workflow)
+- Immediately generate a TravelPlanDisplay with complete, destination/vibe-specific recommendations
+- Include all 5 sections of content in structured format
 
-Update the `components` array with any component(s) you want tambo to be able to use in a response!
+### Tambo Hooks
+- **useTamboThread**: Accesses the message thread to display chat history and rendered components
+- **useTamboThreadInput**: Submits user preferences programmatically without manual typing
+- **TamboProvider**: Wraps the entire app with components and tools registration
 
-You can find more information about the options [here](https://docs.tambo.co/concepts/generative-interfaces/generative-components)
-
-### Add tools for tambo to use
-
-Tools are defined with `inputSchema` and `outputSchema`:
-
-```tsx
-export const tools: TamboTool[] = [
-  {
-    name: "globalPopulation",
-    description:
-      "A tool to get global population trends with optional year range filtering",
-    tool: getGlobalPopulationTrend,
-    inputSchema: z.object({
-      startYear: z.number().optional(),
-      endYear: z.number().optional(),
-    }),
-    outputSchema: z.array(
-      z.object({
-        year: z.number(),
-        population: z.number(),
-        growthRate: z.number(),
-      }),
-    ),
-  },
-];
-```
-
-Find more information about tools [here.](https://docs.tambo.co/concepts/tools)
-
-### The Magic of Tambo Requires the TamboProvider
-
-Make sure in the TamboProvider wrapped around your app:
-
-```tsx
-...
-<TamboProvider
-  apiKey={process.env.NEXT_PUBLIC_TAMBO_API_KEY!}
-  components={components} // Array of components to control
-  tools={tools} // Array of tools it can use
->
-  {children}
-</TamboProvider>
-```
-
-In this example we do this in the `Layout.tsx` file, but you can do it anywhere in your app that is a client component.
-
-### Voice input
-
-The template includes a `DictationButton` component using the `useTamboVoice` hook for speech-to-text input.
-
-### MCP (Model Context Protocol)
-
-The template includes MCP support for connecting to external tools and resources. You can use the MCP hooks from `@tambo-ai/react/mcp`:
-
-- `useTamboMcpPromptList` - List available prompts from MCP servers
-- `useTamboMcpPrompt` - Get a specific prompt
-- `useTamboMcpResourceList` - List available resources
-
-See `src/components/tambo/mcp-components.tsx` for example usage.
-
-### Change where component responses are shown
-
-The components used by tambo are shown alongside the message response from tambo within the chat thread, but you can have the result components show wherever you like by accessing the latest thread message's `renderedComponent` field:
-
-```tsx
-const { thread } = useTambo();
-const latestComponent =
-  thread?.messages[thread.messages.length - 1]?.renderedComponent;
-
-return (
-  <div>
-    {latestComponent && (
-      <div className="my-custom-wrapper">{latestComponent}</div>
-    )}
-  </div>
-);
-```
-
-For more detailed documentation, visit [Tambo's official docs](https://docs.tambo.co).
+### Result
+A seamless experience where users select preferences → AI generates complete itinerary → PDF downloads, all without typing or follow-up prompts. Tambo's generative components eliminate UI boilerplate and let the AI decide what to show and when.

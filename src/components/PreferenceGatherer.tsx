@@ -71,6 +71,7 @@ interface PreferenceGathererProps {
 
 export default function PreferenceGatherer({ onPreferencesSubmit }: PreferenceGathererProps) {
   const { setValue, submit, isPending } = useTamboThreadInput();
+  const [destination, setDestination] = useState<string>('');
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
   const [selectedHotel, setSelectedHotel] = useState<string | null>(null);
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
@@ -91,15 +92,15 @@ export default function PreferenceGatherer({ onPreferencesSubmit }: PreferenceGa
 
   const handleConfirm = async () => {
     const budgetNumber = resolveBudgetNumber();
-    if (!selectedVibe || !selectedHotel || !budgetNumber) {
-      alert('Please select vibe, hotel level, and a valid budget');
+    if (!destination.trim() || !selectedVibe || !selectedHotel || !budgetNumber) {
+      alert('Please enter destination, select vibe, hotel level, and a valid budget');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const message = `My preferences: I want a ${selectedVibe} vibe with ${selectedHotel} hotel level and a total budget of $${budgetNumber} for 3 days (excluding flights).`;
+      const message = `I want to travel to ${destination}. My preferences: I want a ${selectedVibe} vibe with ${selectedHotel} hotel level and a total budget of $${budgetNumber} for 3 days (excluding flights).`;
 
       // Submit the message to Tambo using thread input API
       setValue(message);
@@ -120,19 +121,33 @@ export default function PreferenceGatherer({ onPreferencesSubmit }: PreferenceGa
       {/* Header */}
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-800 mb-2">
-          🗾 Let's Build Your Tokyo Itinerary
+          🌍 Plan Your Perfect Trip
         </h2>
         <p className="text-gray-600">
-          Choose your vibe and hotel style for a personalized 3-day plan
+          Tell us where you're going, your vibe, hotel style, and budget—we'll create a complete 3-day itinerary instantly
         </p>
       </div>
 
-      {/* Two Column Layout */}
+      {/* Destination Input */}
+      <div className="bg-white rounded-2xl shadow-md p-6">
+        <label className="block">
+          <h3 className="text-xl font-bold text-gray-800 mb-4">✈️ Where are you going?</h3>
+          <input
+            type="text"
+            placeholder="e.g., Paris, Tokyo, Barcelona, Rome, Bangkok..."
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-lg"
+          />
+        </label>
+      </div>
+
+      {/* Two Column Layout for Vibe & Hotel */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Vibe Selection */}
         <div className="bg-white rounded-2xl shadow-md p-6">
           <div className="mb-4">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">🎯 Your Vibe?</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">🎯 What's your vibe?</h3>
             <div className="space-y-3">
               {vibe_options.map((option) => (
                 <label
@@ -206,7 +221,7 @@ export default function PreferenceGatherer({ onPreferencesSubmit }: PreferenceGa
         {/* Budget Selection */}
         <div className="bg-white rounded-2xl shadow-md p-6">
           <div className="mb-4">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">💵 Pick a total trip budget (USD) for 3 days (excluding flights)</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">💵 Total budget for 3 days (USD, excluding flights)</h3>
             <div className="space-y-3">
               <label className={`flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedBudget === '300-500' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 bg-white'}`}>
                 <div className="flex items-center mt-1">
@@ -274,8 +289,8 @@ export default function PreferenceGatherer({ onPreferencesSubmit }: PreferenceGa
       {/* Instructions */}
       <div className="bg-linear-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500 p-4 rounded-lg">
         <p className="text-sm text-gray-700">
-          <strong>✨ No Typing Needed!</strong> Just click your preferences above and hit the button - 
-          we'll instantly create your perfect 3-day Tokyo itinerary.
+          <strong>✨ No Typing Needed!</strong> Just enter your destination, select your preferences above, and hit the button - 
+          we'll instantly create your perfect customized 3-day itinerary.
         </p>
       </div>
     </div>
