@@ -1,6 +1,29 @@
 import { tripPlanSchema } from "@/lib/trip-schema";
 import type { TripInput, TripPlan } from "@/types/trip";
 
+export class MissingGeminiApiKeyError extends Error {
+  constructor() {
+    super("Missing GEMINI_API_KEY");
+  }
+}
+
+export class GeminiTimeoutError extends Error {
+  constructor() {
+    super("Gemini API request timed out");
+  }
+}
+
+export class GeminiUpstreamError extends Error {
+  status: number;
+  statusText: string;
+
+  constructor(status: number, statusText: string) {
+    super(`Gemini API error (${status} ${statusText})`);
+    this.status = status;
+    this.statusText = statusText;
+  }
+}
+
 function stripCodeFences(text: string): string {
   const trimmed = text.trim();
   if (!trimmed.startsWith("```")) return trimmed;
@@ -17,6 +40,7 @@ function stripCodeFences(text: string): string {
 function parseModelJson(text: string): unknown {
   const stripped = stripCodeFences(text);
   const preview = stripped.slice(0, 1000);
+  const isProd = process.env.NODE_ENV === "production";
 
   try {
     return JSON.parse(stripped);
@@ -26,14 +50,22 @@ function parseModelJson(text: string): unknown {
     const start = stripped.indexOf("{");
     const end = stripped.lastIndexOf("}");
     if (start === -1 || end === -1 || end <= start) {
-      console.error("Gemini JSON parse failed", { preview });
+      if (isProd) {
+        console.error("Gemini JSON parse failed");
+      } else {
+        console.error("Gemini JSON parse failed", { preview });
+      }
       throw new Error("Failed to parse JSON from Gemini response");
     }
 
     try {
       return JSON.parse(stripped.slice(start, end + 1));
     } catch {
-      console.error("Gemini JSON parse failed", { preview });
+      if (isProd) {
+        console.error("Gemini JSON parse failed");
+      } else {
+        console.error("Gemini JSON parse failed", { preview });
+      }
       throw new Error("Failed to parse JSON from Gemini response");
     }
   }
@@ -44,7 +76,7 @@ export async function generateTripPlanWithGemini(
 ): Promise<TripPlan> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("Missing GEMINI_API_KEY");
+    throw new MissingGeminiApiKeyError();
   }
 
   const prompt = [
@@ -90,7 +122,7 @@ export async function generateTripPlanWithGemini(
     });
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
-      throw new Error("Gemini API request timed out");
+      throw new GeminiTimeoutError();
     }
 
     throw err;
@@ -100,13 +132,20 @@ export async function generateTripPlanWithGemini(
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    console.error("Gemini API error response", {
-      status: res.status,
-      statusText: res.statusText,
-      bodyPreview: errText.slice(0, 1000),
-    });
+    if (process.env.NODE_ENV === "production") {
+      console.error("Gemini API error response", {
+        status: res.status,
+        statusText: res.statusText,
+      });
+    } else {
+      console.error("Gemini API error response", {
+        status: res.status,
+        statusText: res.statusText,
+        bodyPreview: errText.slice(0, 1000),
+      });
+    }
 
-    throw new Error(`Gemini API error (${res.status} ${res.statusText})`);
+    throw new GeminiUpstreamError(res.status, res.statusText);
   }
 
   const data = (await res.json()) as {

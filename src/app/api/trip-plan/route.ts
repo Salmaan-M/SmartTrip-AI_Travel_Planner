@@ -1,5 +1,10 @@
 import { tripInputSchema } from "@/lib/trip-schema";
-import { generateTripPlanWithGemini } from "@/services/gemini-trip-plan";
+import {
+  GeminiTimeoutError,
+  GeminiUpstreamError,
+  MissingGeminiApiKeyError,
+  generateTripPlanWithGemini,
+} from "@/services/gemini-trip-plan";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
@@ -25,7 +30,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (err instanceof Error && err.message === "Missing GEMINI_API_KEY") {
+    if (err instanceof MissingGeminiApiKeyError) {
       return NextResponse.json(
         {
           code: "CONFIG_ERROR",
@@ -35,7 +40,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (err instanceof Error && err.message === "Gemini API request timed out") {
+    if (err instanceof GeminiTimeoutError) {
       return NextResponse.json(
         {
           code: "TIMEOUT",
@@ -45,7 +50,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (err instanceof Error && err.message.startsWith("Gemini API error (")) {
+    if (err instanceof GeminiUpstreamError) {
       return NextResponse.json(
         {
           code: "UPSTREAM_ERROR",
