@@ -440,6 +440,9 @@ export const McpResourceButton = React.forwardRef<
   HTMLButtonElement,
   McpResourceButtonProps
 >(({ className, onInsertResource, value: _value, ...props }, ref) => {
+  // Keep `value` out of the native button props; it's currently unused by this component.
+  void _value;
+
   const { data: resourceList, isLoading } = useTamboMcpResourceList();
   const [isOpen, setIsOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");

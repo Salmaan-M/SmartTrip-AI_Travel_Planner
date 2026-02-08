@@ -672,6 +672,9 @@ export const TextEditor = React.forwardRef<TamboEditor, TextEditorProps>(
         Text,
         HardBreak,
         Placeholder.configure({ placeholder }),
+        /* eslint-disable react-hooks/refs -- TipTap extensions store callbacks that run outside React render.
+         * These callbacks use refs to access the latest suggestion state when TipTap fires events.
+         */
         Mention.configure({
           HTMLAttributes: {
             class:
@@ -689,6 +692,7 @@ export const TextEditor = React.forwardRef<TamboEditor, TextEditorProps>(
           handlePromptSelect,
           promptRef,
         ),
+        /* eslint-enable react-hooks/refs */
       ],
       content: value,
       editable: !disabled,

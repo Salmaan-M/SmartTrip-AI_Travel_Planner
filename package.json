@@ -41,11 +41,11 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",
-    "@types/dompurify": "^3.2.0",
     "@types/node": "^24.3.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.22",
+    "baseline-browser-mapping": "^2.9.19",
     "clsx": "^2.1.1",
     "eslint": "^9",
     "eslint-config-next": "^16.0.4",

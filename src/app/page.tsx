@@ -7,7 +7,7 @@ import { TripInput } from '@/types/trip';
 
 export default function Home() {
   const { thread } = useTamboThread();
-  const { value, setValue, submit, isPending } = useTamboThreadInput();
+  const { setValue, submit, isPending } = useTamboThreadInput();
   const [showForm, setShowForm] = useState(true);
 
   const handleSubmit = async (data: TripInput) => {

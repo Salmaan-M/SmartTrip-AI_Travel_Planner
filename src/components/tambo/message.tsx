@@ -277,6 +277,7 @@ const MessageImages = React.forwardRef<HTMLDivElement, MessageImagesProps>(
             key={index}
             className="w-32 h-32 rounded-md overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imageUrl}
               alt={`Image ${index + 1}`}
@@ -800,6 +801,7 @@ function renderImageContent(url: string, index: number): React.ReactNode {
       key={`image-${index}`}
       className="rounded-md overflow-hidden shadow-sm max-w-xs"
     >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={url}
         alt={`Tool result image ${index + 1}`}
@@ -836,6 +838,7 @@ function renderResourceContent(
         key={`resource-blob-${index}`}
         className="rounded-md overflow-hidden shadow-sm max-w-xs"
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={dataUrl}
           alt={resource.name ?? `Resource image ${index + 1}`}
