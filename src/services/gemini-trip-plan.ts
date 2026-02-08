@@ -6,13 +6,12 @@ function stripCodeFences(text: string): string {
   if (!trimmed.startsWith("```")) return trimmed;
 
   const firstNewline = trimmed.indexOf("\n");
-  if (firstNewline === -1) return trimmed;
+  if (firstNewline === -1) return text;
 
-  const withoutStart = trimmed.slice(firstNewline + 1);
-  const endFence = withoutStart.lastIndexOf("```");
-  if (endFence === -1) return trimmed;
+  const endFence = trimmed.lastIndexOf("```");
+  if (endFence === -1 || endFence <= firstNewline) return text;
 
-  return withoutStart.slice(0, endFence).trim();
+  return trimmed.slice(firstNewline + 1, endFence).trim();
 }
 
 function parseModelJson(text: string): unknown {
@@ -64,23 +63,38 @@ export async function generateTripPlanWithGemini(
   );
   url.searchParams.set("key", apiKey);
 
-  const res = await fetch(url.toString(), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: prompt }],
-        },
-      ],
-      generationConfig: {
-        temperature: 0.7,
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
+  let res: Response;
+  try {
+    res = await fetch(url.toString(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    }),
-  });
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: prompt }],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.7,
+        },
+      }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("Gemini API request timed out");
+    }
+
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
